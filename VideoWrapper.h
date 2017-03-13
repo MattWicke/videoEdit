@@ -14,6 +14,7 @@ public:
     void record(std::string m_fileName);
     int activeIndex;
     bool applyCrop;
+    cv::Rect croproi;
 private:
     cv::VideoCapture vidCap;
     std::vector<cv::Mat> frameVec;
@@ -23,5 +24,4 @@ private:
     char ext[4];
     double frameDelayUS;
     cv::Size sz;
-    cv::Rect croproi;
 };
