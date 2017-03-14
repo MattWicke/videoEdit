@@ -54,3 +54,8 @@ cv::Mat* VideoWrapper::getFramePtr(int index)
 {
     return &frameVec[index];
 }
+
+cv::Mat* VideoWrapper::getFrameActivePtr()
+{
+    return &frameVec[activeIndex];
+}

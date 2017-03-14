@@ -17,6 +17,7 @@ public:
     cv::Rect croproi;
     cv::VideoCapture vidCap;
     cv::Mat* getFramePtr(int index);
+    cv::Mat* getFrameActivePtr();
     int maxFrames;
 private:
     std::vector<cv::Mat> frameVec;

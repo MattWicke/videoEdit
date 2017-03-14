@@ -158,7 +158,7 @@ void cropPhaseMouseFunction(int event, int mouseX, int mouseY, void* smPtr)
 void mouseCallback(int event, int mouseX, int mouseY, int, void* smPtr)
 {
     StateMachine* sm = (StateMachine*)smPtr;
-    if(sm->state == CROP)
+    //if(sm->state == CROP)
     {
         cropPhaseMouseFunction(event, mouseX, mouseY, smPtr);
     }
@@ -168,7 +168,10 @@ void cropTrackCallback(int inVal, void* smPtr)
 {
     StateMachine* sm = (StateMachine*)smPtr;
     sm->activeVideo->activeIndex = inVal;
-    cv::imshow("crop", *sm->activeVideo->getFramePtr(inVal));
+        cv::Mat displayFrame;
+        sm->activeVideo->getFrameActivePtr()->copyTo(displayFrame);
+        cv::rectangle(displayFrame, sm->activeVideo->croproi, CV_RGB(255, 255, 0), 10);
+        cv::imshow("crop", displayFrame);
 }
 
 //***********************************************************************
@@ -177,6 +180,7 @@ void StateMachine::cropPhase()
 {
     cv::Mat* framePtr = activeVideo->getFramePtr(0);
     cv::namedWindow("crop", CV_WINDOW_NORMAL);
+    cv::imshow("crop", *activeVideo->getFrameActivePtr());
     cv::createTrackbar(  "track"
                        , "crop"
                        , &(activeVideo->activeIndex)
@@ -184,6 +188,19 @@ void StateMachine::cropPhase()
                        , cropTrackCallback
                        , this
                        );
+    char key = 0;
+
+    cv::setMouseCallback("crop", mouseCallback, this);
+
+
+    while(key != ' ')
+    {
+        cv::Mat displayFrame;
+        activeVideo->getFrameActivePtr()->copyTo(displayFrame);
+        cv::rectangle(displayFrame, activeVideo->croproi, CV_RGB(255, 255, 0), 10);
+        cv::imshow("crop", displayFrame);
+        key = waitKey(10);
+    }
 
     cv::waitKey(0);
 }
