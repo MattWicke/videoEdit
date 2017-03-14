@@ -44,15 +44,27 @@ public:
     State state;
     void cropPhase();
     CropParams cropParams;
-    VideoWrapper* = activeVideo;
+    VideoWrapper* activeVideo;
+    void loadVideo(std::string fileName);
+    ~StateMachine();
+    bool setActiveVideo(int index);
 private:
-    CmdParser parser;
-    std::vector<VideoWrapper> vidWrappers;
+    //CmdParser parser;
+    std::vector<VideoWrapper*> vidWrappers;
 };
 
-void StateMachine::cropPhase()
+StateMachine::~StateMachine()
 {
+    for(int ii = 0; ii < vidWrappers.size(); ii++)
+        delete vidWrappers[ii];
+}
 
+
+void StateMachine::loadVideo(std::string fileName)
+{
+    VideoWrapper* newVideo = new VideoWrapper(fileName);
+    vidWrappers.push_back(newVideo);
+    activeVideo = newVideo;
 }
 
 //** used in the crop phase to figure out what side of the crop
@@ -80,33 +92,63 @@ Side getSideFromClick(VideoWrapper* vidPtr, int mouseX, int mouseY)
 
 //** used in the crop phase to change the dimensions of the crop
 //** rectangle when the user is dragging it
-void changeCropRect(videoWrapper* vidPtr 
+void changeCropRect(VideoWrapper* vidPtr 
                     , CropParams* cropParams
                     , int mouseX
                     , int mouseY)
 {
+    int x1 = vidPtr->croproi.x;
+    int x2 = vidPtr->croproi.x + vidPtr->croproi.width;
+    int y1 = vidPtr->croproi.y;
+    int y2 = vidPtr->croproi.y + vidPtr->croproi.height;
+
+    switch(cropParams->activeSide)
+    {
+        case LEFT:
+        vidPtr->croproi.x = mouseX;
+        vidPtr->croproi.width = abs(x2 - mouseX);
+        break;
+
+        case RIGHT:
+        vidPtr->croproi.width = mouseX - x1;
+        break;
+
+        case UP:
+        vidPtr->croproi.y = mouseY;
+        vidPtr->croproi.height = abs(y2 - mouseY);
+        break;
+
+        case DOWN:
+        vidPtr->croproi.height = mouseY - y1;
+        break;
+    }
 }
 
 //** used int the crop phase. Should only be called from the mouseCallback
 void cropPhaseMouseFunction(int event, int mouseX, int mouseY, void* smPtr)
 {
     StateMachine* sm = (StateMachine*)smPtr;
-    CropParams* cropParams = &(sm->cropParams);
     switch(event)
     {
         case EVENT_LBUTTONDOWN:
-            cropParams->drag = true;
-            cropParams->side = getSideFromClick(sm->activeVideo, mouseX, mouseY);
+            sm->cropParams.drag = true;
+            sm->cropParams.activeSide = getSideFromClick(sm->activeVideo, mouseX, mouseY);
         break;
 
         case EVENT_LBUTTONUP:
-            cropParams->drag = false;
-            cropParams->side = none
+            sm->cropParams.drag = false;
+            sm->cropParams.activeSide = NONE;
         break;
 
         case EVENT_MOUSEMOVE:
-        if(cropParams->drag)
+        if(sm->cropParams.drag)
         {
+            changeCropRect( sm->activeVideo 
+                           , &sm->cropParams
+                           , mouseX
+                           , mouseY
+                           );
+
         }
         break;
     }
@@ -121,11 +163,35 @@ void mouseCallback(int event, int mouseX, int mouseY, int, void* smPtr)
         cropPhaseMouseFunction(event, mouseX, mouseY, smPtr);
     }
 }
+
+void cropTrackCallback(int inVal, void* smPtr)
+{
+    StateMachine* sm = (StateMachine*)smPtr;
+    sm->activeVideo->activeIndex = inVal;
+    cv::imshow("crop", *sm->activeVideo->getFramePtr(inVal));
+}
+
 //***********************************************************************
+
+void StateMachine::cropPhase()
+{
+    cv::Mat* framePtr = activeVideo->getFramePtr(0);
+    cv::namedWindow("crop", CV_WINDOW_NORMAL);
+    cv::createTrackbar(  "track"
+                       , "crop"
+                       , &(activeVideo->activeIndex)
+                       , activeVideo->maxFrames -1
+                       , cropTrackCallback
+                       , this
+                       );
+
+    cv::waitKey(0);
+}
 
 int main(int argc, char* argv[])
 {
     CmdParser parser(argc, argv);
-    VideoWrapper vw(parser[1]);
-    vw.record(parser[2]);
+    StateMachine sm;
+    sm.loadVideo("splash.avi");
+    sm.cropPhase();
 }

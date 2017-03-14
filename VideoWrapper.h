@@ -15,12 +15,13 @@ public:
     int activeIndex;
     bool applyCrop;
     cv::Rect croproi;
-private:
     cv::VideoCapture vidCap;
+    cv::Mat* getFramePtr(int index);
+    int maxFrames;
+private:
     std::vector<cv::Mat> frameVec;
     int ex;
     double fps;
-    int maxFrames;
     char ext[4];
     double frameDelayUS;
     cv::Size sz;

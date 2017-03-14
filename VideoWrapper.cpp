@@ -1,6 +1,7 @@
 #include "VideoWrapper.h"
 
-VideoWrapper::VideoWrapper(std::string m_fileName)
+VideoWrapper::VideoWrapper(std::string m_fileName) :
+    activeIndex(0)
 {
     vidCap.open(m_fileName);
 
@@ -47,4 +48,9 @@ void VideoWrapper::record(std::string m_fileName)
         usleep(frameDelayUS);
     }
     std::cout << "Video write complete" << std::endl;
+}
+
+cv::Mat* VideoWrapper::getFramePtr(int index)
+{
+    return &frameVec[index];
 }
