@@ -48,6 +48,7 @@ public:
     void loadVideo(std::string fileName);
     ~StateMachine();
     bool setActiveVideo(int index);
+    void playVideo();
 private:
     //CmdParser parser;
     std::vector<VideoWrapper*> vidWrappers;
@@ -201,8 +202,18 @@ void StateMachine::cropPhase()
         cv::imshow("crop", displayFrame);
         key = waitKey(10);
     }
+    cv::destroyWindow("crop");
+    activeVideo->crop();
+}
 
-    cv::waitKey(0);
+void StateMachine::playVideo()
+{
+    cv::namedWindow("play", 1);
+    for(int ii = activeVideo->activeIndex; ii < activeVideo->maxFrames - 1; ii++)
+    {
+        cv::imshow("play", *activeVideo->getFramePtr(ii));
+        cv::waitKey(30);
+    }
 }
 
 int main(int argc, char* argv[])
@@ -211,4 +222,5 @@ int main(int argc, char* argv[])
     StateMachine sm;
     sm.loadVideo("splash.avi");
     sm.cropPhase();
+    sm.playVideo();
 }

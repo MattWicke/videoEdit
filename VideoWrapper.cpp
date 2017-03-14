@@ -59,3 +59,12 @@ cv::Mat* VideoWrapper::getFrameActivePtr()
 {
     return &frameVec[activeIndex];
 }
+
+void VideoWrapper::crop()
+{
+    for(int ii = 0; ii < frameVec.size(); ii++)
+    {
+        cv::Mat temp(frameVec[ii](croproi));
+        frameVec[ii] = temp;
+    }
+}

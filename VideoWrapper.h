@@ -19,11 +19,12 @@ public:
     cv::Mat* getFramePtr(int index);
     cv::Mat* getFrameActivePtr();
     int maxFrames;
+    void crop();
+    double frameDelayUS;
 private:
     std::vector<cv::Mat> frameVec;
     int ex;
     double fps;
     char ext[4];
-    double frameDelayUS;
     cv::Size sz;
 };
