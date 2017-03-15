@@ -31,10 +31,15 @@ VideoWrapper::VideoWrapper(std::string m_fileName) :
     //** load all video into memory
     for(int ii = 0; ii < maxFrames; ii++)
     {
+        std::cout << "loading " << ii << "/" << maxFrames << std::endl;
         cv::Mat tempFrame;
         vidCap.read(tempFrame);
-        frameVec.push_back(tempFrame);
+        if(tempFrame.rows > 0 && tempFrame.cols >0)
+            frameVec.push_back(tempFrame);
+        else
+            std::cout << "WARNING: bad frame read" << ii << std::endl;
     }
+    std::cout << "  Done Loading Video" << std::endl;
 }
 
 void VideoWrapper::record(std::string m_fileName)
@@ -64,7 +69,9 @@ void VideoWrapper::crop()
 {
     for(int ii = 0; ii < frameVec.size(); ii++)
     {
-        cv::Mat temp(frameVec[ii](croproi));
+        std::cout << "crop " << ii << std::endl;
+        cv::Mat temp;
+        temp = cv::Mat(frameVec[ii](croproi));
         frameVec[ii] = temp;
     }
 }

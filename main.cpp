@@ -8,6 +8,7 @@
 #include <string>
 #include "VideoWrapper.h"
 #include "types.h"
+#include "filters.h"
 
 //************************************cmdParser***************************************
 class CmdParser
@@ -47,12 +48,19 @@ public:
     VideoWrapper* activeVideo;
     void loadVideo(std::string fileName);
     ~StateMachine();
+    StateMachine();
     bool setActiveVideo(int index);
     void playVideo();
+    ChannelSplitter* channelSplitter;
 private:
     //CmdParser parser;
     std::vector<VideoWrapper*> vidWrappers;
 };
+
+StateMachine::StateMachine()
+    {
+        channelSplitter = new ChannelSplitter(0,5,10);
+    }
 
 StateMachine::~StateMachine()
 {
@@ -208,19 +216,24 @@ void StateMachine::cropPhase()
 
 void StateMachine::playVideo()
 {
-    cv::namedWindow("play", 1);
-    for(int ii = activeVideo->activeIndex; ii < activeVideo->maxFrames - 1; ii++)
+    cv::namedWindow("play", CV_WINDOW_NORMAL);
+    for(int ii = activeVideo->activeIndex; ii < activeVideo->maxFrames - 10; ii++)
     {
+        cv::Mat temp;
+        channelSplitter->process(*activeVideo->getFramePtr(ii), temp);
+        *activeVideo->getFramePtr(ii) = temp;
         cv::imshow("play", *activeVideo->getFramePtr(ii));
         cv::waitKey(30);
     }
+    activeVideo->record("output.avi");
+    std::cout << "video recorded" << std::endl;
 }
 
 int main(int argc, char* argv[])
 {
     CmdParser parser(argc, argv);
     StateMachine sm;
-    sm.loadVideo("splash.avi");
+    sm.loadVideo(std::string(argv[1]));
     sm.cropPhase();
     sm.playVideo();
 }
