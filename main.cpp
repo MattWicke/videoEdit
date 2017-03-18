@@ -223,7 +223,7 @@ void StateMachine::playVideo()
         channelSplitter->process(*activeVideo->getFramePtr(ii), temp);
         *activeVideo->getFramePtr(ii) = temp;
         cv::imshow("play", *activeVideo->getFramePtr(ii));
-        cv::waitKey(30);
+        cv::waitKey(1);
     }
     activeVideo->record("output.avi");
     std::cout << "video recorded" << std::endl;
