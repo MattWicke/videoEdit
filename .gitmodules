@@ -1,0 +1,3 @@
+[submodule "pixelSort"]
+	path = pixelSort
+	url = git@github.com:MattWicke/pixelSort.git
