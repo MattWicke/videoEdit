@@ -16,7 +16,8 @@ ChannelSplitter::ChannelSplitter(int n_red_depth, int n_green_depth, int n_blue_
     blue_depth(n_blue_depth), 
     red_count(1), 
     green_count(1), 
-    blue_count(1) 
+    blue_count(1) ,
+    first_set(false)
 {
 }
 
@@ -31,14 +32,20 @@ void ChannelSplitter::process(Mat input, Mat& output)
 {
     Mat channel_array_target[3];
     Mat channel_array_out[3];
+    static Mat channel_array_first[3];
     split(input, channel_array_target);
-    int channels_on = 0;
+
+    if(!first_set)
+    {
+        //channel_array_target[0].copyTo(channel_array_first[0]);
+        channel_array_target[1].copyTo(channel_array_first[1]);
+        channel_array_target[2].copyTo(channel_array_first[2]);
+        first_set = true;
+    }
     //if(red_count > red_depth)
     //{
         red_list.push(channel_array_target[0]);
-        int num = channel_array_target[0].type();
         channel_array_out[0] = (red_list.front());
-        channels_on = 1;
     //}
     if(green_count > green_depth)
     {
@@ -48,7 +55,8 @@ void ChannelSplitter::process(Mat input, Mat& output)
     else
     {
         Mat temp_mat = Mat::zeros(input.rows, input.cols, CV_8UC1);
-        green_list.push(temp_mat);
+        //green_list.push(temp_mat);
+        green_list.push(channel_array_first[1]);
         channel_array_out[1] = (green_list.front());
     }
 
@@ -56,12 +64,12 @@ void ChannelSplitter::process(Mat input, Mat& output)
     {
         blue_list.push(channel_array_target[2]);
         channel_array_out[2] = (blue_list.front());
-        channels_on = 3;
     }
     else
     {
         Mat temp_mat = Mat::zeros(input.rows, input.cols, CV_8UC1);
-        blue_list.push(temp_mat);
+        //blue_list.push(temp_mat);
+        blue_list.push(channel_array_first[2]);
         channel_array_out[2] = (blue_list.front());
     }
 
@@ -75,8 +83,7 @@ void ChannelSplitter::process(Mat input, Mat& output)
    red_count++;
    green_count++;
    blue_count++;
-    //merge(channel_array_out, channels_on, output);
-    merge(channel_array_out, 3, output);
+   merge(channel_array_out, 3, output);
 }
 
 void sum(Mat _a, Mat _b, Mat& _dst, double scale)

@@ -33,6 +33,7 @@ public:
    int red_count;
    int green_count;
    int blue_count;
+   bool first_set;
 
    ChannelSplitter(int n_red_depth, int n_green_dept, int n_blue_depth);
    void setColorDepth(int n_red_depth, int n_green_dept, int n_blue_depth);

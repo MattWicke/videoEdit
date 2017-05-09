@@ -67,6 +67,8 @@ cv::Mat* VideoWrapper::getFrameActivePtr()
 
 void VideoWrapper::crop()
 {
+    sz.width = croproi.width;
+    sz.height = croproi.height;
     for(int ii = 0; ii < frameVec.size(); ii++)
     {
         std::cout << "crop " << ii << std::endl;

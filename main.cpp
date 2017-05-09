@@ -9,14 +9,24 @@
 #include "VideoWrapper.h"
 #include "types.h"
 #include "filters.h"
+#include "pixelSort/pixelSort.h"
 
 //************************************cmdParser***************************************
+enum EffectMode {RGB_DELAY, PIXEL_SORT};
+enum PSortMode {HORZ, VERT};
 class CmdParser
 {
 public:
     std::vector<std::string> args;
     CmdParser(int m_argc, char* m_argv[]);
     std::string operator[](size_t ii);
+    EffectMode eMode;
+    PSortMode psMode;
+
+private:
+    void assignParams();
+    void assignMode(std::string inParam);
+    void sortDirFromUser();
 };
 
 CmdParser::CmdParser(int m_argc, char* m_argv[])
@@ -24,6 +34,58 @@ CmdParser::CmdParser(int m_argc, char* m_argv[])
     for(int ii = 0; ii < m_argc; ii++)
     {
         args.push_back(std::string(m_argv[ii]));
+    }
+    assignParams();
+}
+
+void CmdParser::assignParams()
+{
+    int ii = 0;
+    while(ii < args.size())
+    {
+        std::cout << ii << std::endl;
+        if(args[ii] == "-m")
+        {
+            ii++;
+            assignMode(args[ii]);
+        }
+        ii++;
+    }
+}
+
+void CmdParser::assignMode(std::string inParam)
+{
+    if(inParam == "rgb")
+        eMode = RGB_DELAY;
+
+    if(inParam == "srt")
+    {
+        eMode = PIXEL_SORT;
+        sortDirFromUser();
+    }
+}
+
+void CmdParser::sortDirFromUser()
+{
+    char input = 0;
+
+    while((input  != 'h')&&(input  != 'v'))
+    {
+        std::cout << "Enter a direction" << std::endl;
+        std::cout << " horizontal h" << std::endl;
+        std::cout << " vertical v" << std::endl;
+        std::cin >> input;
+    }
+
+    switch(input)
+    {
+        case 'h':
+        psMode = HORZ;
+        break;
+
+        case 'v':
+        psMode = VERT;
+        break;
     }
 }
 
@@ -42,25 +104,32 @@ struct CropParams
 class StateMachine
 {
 public:
+    //**variables
     State state;
-    void cropPhase();
+    CmdParser &parser;
     CropParams cropParams;
     VideoWrapper* activeVideo;
-    void loadVideo(std::string fileName);
-    ~StateMachine();
-    StateMachine();
-    bool setActiveVideo(int index);
-    void playVideo();
     ChannelSplitter* channelSplitter;
+    CannyParams cparams;
+
+    //**functions
+    StateMachine(CmdParser &inparser);
+    ~StateMachine();
+    void cropPhase();
+    void loadVideo(std::string fileName);
+    bool setActiveVideo(int index);
+    void processVideo();
+    void pSortTuningPhase();
+
 private:
-    //CmdParser parser;
     std::vector<VideoWrapper*> vidWrappers;
 };
 
-StateMachine::StateMachine()
-    {
-        channelSplitter = new ChannelSplitter(0,5,10);
-    }
+StateMachine::StateMachine(CmdParser &inparser):
+    parser(inparser)
+{
+    channelSplitter = new ChannelSplitter(0,5,10);
+}
 
 StateMachine::~StateMachine()
 {
@@ -177,10 +246,27 @@ void cropTrackCallback(int inVal, void* smPtr)
 {
     StateMachine* sm = (StateMachine*)smPtr;
     sm->activeVideo->activeIndex = inVal;
-        cv::Mat displayFrame;
-        sm->activeVideo->getFrameActivePtr()->copyTo(displayFrame);
-        cv::rectangle(displayFrame, sm->activeVideo->croproi, CV_RGB(255, 255, 0), 10);
-        cv::imshow("crop", displayFrame);
+    cv::Mat displayFrame;
+    sm->activeVideo->getFrameActivePtr()->copyTo(displayFrame);
+    cv::rectangle(displayFrame, sm->activeVideo->croproi, CV_RGB(255, 255, 0), 10);
+    cv::imshow("crop", displayFrame);
+}
+
+void pSTrackCallback(int inVal, void* smPtr)
+{
+    StateMachine* sm = (StateMachine*)smPtr;
+    sm->activeVideo->activeIndex = inVal;
+    sm->cparams.edges = cannyEdgeDetect(sm->cparams.source,
+                                        sm->cparams.lowThreshold);
+    cv::imshow("edges", sm->cparams.edges);
+}
+
+void pSCallback(int, void* smPtr)
+{
+    StateMachine* sm = (StateMachine*)smPtr;
+    sm->cparams.edges = cannyEdgeDetect(sm->cparams.source,
+                                        sm->cparams.lowThreshold);
+    cv::imshow("edges", sm->cparams.edges);
 }
 
 //***********************************************************************
@@ -214,13 +300,67 @@ void StateMachine::cropPhase()
     activeVideo->crop();
 }
 
-void StateMachine::playVideo()
+void StateMachine::pSortTuningPhase()
+{
+    cv::Mat* framePtr = activeVideo->getFramePtr(0);
+    cv::namedWindow("edges", CV_WINDOW_NORMAL);
+    cv::imshow("edges", *activeVideo->getFrameActivePtr());
+    cv::createTrackbar(  "pose"
+                       , "edges"
+                       , &(activeVideo->activeIndex)
+                       , activeVideo->maxFrames -1
+                       , pSTrackCallback
+                       , this
+                       );
+
+    cv::createTrackbar(  "canny"
+                       , "edges"
+                       , &cparams.lowThreshold
+                       , 100
+                       , pSCallback
+                       , this
+                       );
+
+    char key = 0;
+    while(key != ' ')
+    {
+        activeVideo->getFrameActivePtr()->copyTo(cparams.source);
+        cparams.edges = cannyEdgeDetect(cparams.source, cparams.lowThreshold);
+        
+        //cv::imshow("edges", cparams.edges);
+        key = waitKey(10);
+    }
+    cv::destroyWindow("edges");
+}
+
+void StateMachine::processVideo()
 {
     cv::namedWindow("play", CV_WINDOW_NORMAL);
     for(int ii = activeVideo->activeIndex; ii < activeVideo->maxFrames - 10; ii++)
     {
         cv::Mat temp;
-        channelSplitter->process(*activeVideo->getFramePtr(ii), temp);
+        
+        switch(parser.eMode)
+        {
+            case RGB_DELAY:
+                channelSplitter->process(*activeVideo->getFramePtr(ii), temp);
+            break;
+
+            case PIXEL_SORT:
+                switch(parser.psMode)
+                    {
+                        case VERT:
+                            temp = cannySortColumn(*activeVideo->getFramePtr(ii),
+                                                    cparams.lowThreshold);
+                        break;
+
+                        case HORZ:
+                            temp = cannySortRow(*activeVideo->getFramePtr(ii),
+                                                 cparams.lowThreshold);
+                        break;
+                    }
+            break;
+        }
         *activeVideo->getFramePtr(ii) = temp;
         cv::imshow("play", *activeVideo->getFramePtr(ii));
         cv::waitKey(1);
@@ -229,11 +369,13 @@ void StateMachine::playVideo()
     std::cout << "video recorded" << std::endl;
 }
 
+
 int main(int argc, char* argv[])
 {
     CmdParser parser(argc, argv);
-    StateMachine sm;
-    sm.loadVideo(std::string(argv[1]));
+    StateMachine sm(parser);
+    sm.loadVideo(parser[1]);
     sm.cropPhase();
-    sm.playVideo();
+    sm.pSortTuningPhase();
+    sm.processVideo();
 }
