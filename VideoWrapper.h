@@ -19,6 +19,7 @@ public:
     cv::Mat* getFramePtr(int index);
     cv::Mat* getFrameActivePtr();
     int maxFrames;
+    int loadedFrames;
     void crop();
     double frameDelayUS;
 private:

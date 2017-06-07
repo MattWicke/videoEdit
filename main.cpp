@@ -12,7 +12,7 @@
 #include "pixelSort/pixelSort.h"
 
 //************************************cmdParser***************************************
-enum EffectMode {RGB_DELAY, PIXEL_SORT};
+enum EffectMode {NO, RGB_DELAY, PIXEL_SORT, STACK, TRAILS, ROLL};
 enum PSortMode {HORZ, VERT};
 class CmdParser
 {
@@ -22,6 +22,7 @@ public:
     std::string operator[](size_t ii);
     EffectMode eMode;
     PSortMode psMode;
+    void printHelp();
 
 private:
     void assignParams();
@@ -56,13 +57,50 @@ void CmdParser::assignParams()
 void CmdParser::assignMode(std::string inParam)
 {
     if(inParam == "rgb")
+    {
         eMode = RGB_DELAY;
+        std::cout << "Mode set to RGB Delay" << std::endl;
+    }
 
     if(inParam == "srt")
     {
         eMode = PIXEL_SORT;
         sortDirFromUser();
+        std::cout << "Mode set to Pixel Sort" << std::endl;
     }
+
+    if(inParam == "sta")
+    {
+        eMode = STACK;
+        std::cout << "Mode set to Stack" << std::endl;
+    }
+
+    if(inParam == "tra")
+    {
+        eMode = TRAILS;
+        std::cout << "Mode set to Trails" << std::endl;
+    }
+
+    if(inParam == "rol")
+    {
+        eMode = ROLL;
+        std::cout << "Mode set to Roll" << std::endl;
+    }
+
+    if(inParam == "non")
+    {
+        eMode = NO;
+        std::cout << "Mode set to none" << std::endl;
+    }
+}
+
+void CmdParser::printHelp()
+{
+    std::cout << "vidEdit [fileName.mp4] -m [filter] " << std::endl;
+    std::cout << " [rgb] RGB delay filter" << std::endl;
+    std::cout << " [srt] pixel sorting filter" << std::endl;
+    std::cout << " [sta] stack frames filter" << std::endl;
+    std::cout << " [tra] trails filter" << std::endl;
 }
 
 void CmdParser::sortDirFromUser()
@@ -88,6 +126,7 @@ void CmdParser::sortDirFromUser()
         break;
     }
 }
+
 
 std::string CmdParser::operator[](size_t ii)
 {
@@ -336,32 +375,57 @@ void StateMachine::pSortTuningPhase()
 void StateMachine::processVideo()
 {
     cv::namedWindow("play", CV_WINDOW_NORMAL);
-    for(int ii = activeVideo->activeIndex; ii < activeVideo->maxFrames - 10; ii++)
+    cv::Mat dst;
+    cv::Mat store;
+    activeVideo->getFramePtr(0)->copyTo(store);
+    activeVideo->getFramePtr(0)->copyTo(dst);
+
+    for(int ii = activeVideo->activeIndex; ii < activeVideo->loadedFrames; ii++)
     {
-        cv::Mat temp;
         
         switch(parser.eMode)
         {
             case RGB_DELAY:
-                channelSplitter->process(*activeVideo->getFramePtr(ii), temp);
+                channelSplitter->process(*activeVideo->getFramePtr(ii), dst);
             break;
 
             case PIXEL_SORT:
                 switch(parser.psMode)
                     {
                         case VERT:
-                            temp = cannySortColumn(*activeVideo->getFramePtr(ii),
+                            dst = cannySortColumn(*activeVideo->getFramePtr(ii),
                                                     cparams.lowThreshold);
                         break;
 
                         case HORZ:
-                            temp = cannySortRow(*activeVideo->getFramePtr(ii),
+                            dst = cannySortRow(*activeVideo->getFramePtr(ii),
                                                  cparams.lowThreshold);
                         break;
                     }
             break;
+
+            case TRAILS: 
+                trails(store
+                       , *activeVideo->getFramePtr(ii)
+                       , dst
+                       );
+                dst.copyTo(store);
+            break;
+
+            case STACK:
+                sum( *activeVideo->getFramePtr(ii)
+                    , store 
+                    , dst
+                    );
+                dst.copyTo(store);
+                store = store/2;
+            break;
+
+            case NONE:
+                activeVideo->getFramePtr(ii)->copyTo(dst);
+            break;
         }
-        *activeVideo->getFramePtr(ii) = temp;
+        dst.copyTo(*activeVideo->getFramePtr(ii));
         cv::imshow("play", *activeVideo->getFramePtr(ii));
         cv::waitKey(1);
     }
@@ -373,9 +437,16 @@ void StateMachine::processVideo()
 int main(int argc, char* argv[])
 {
     CmdParser parser(argc, argv);
+
+    if(argc < 2)
+    {
+        parser.printHelp();
+        return 0;
+    }
     StateMachine sm(parser);
     sm.loadVideo(parser[1]);
     sm.cropPhase();
-    sm.pSortTuningPhase();
+    if(sm.parser.eMode == PIXEL_SORT)
+        sm.pSortTuningPhase();
     sm.processVideo();
 }

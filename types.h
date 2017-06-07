@@ -7,7 +7,7 @@ using namespace cv;
 
 enum Side{ NONE = 0, LEFT, RIGHT, UP, DOWN};
 enum State{ START, CROP, PAUSE, RECORD, PLAY, PLAY_AND_CROP, QUIT};
-enum Mode{ NOFX, ERODE, ADD , STACK, AVERAGE, TRAILS, ROLL, CHANNELS}; 
+//enum Mode{ NOFX, ERODE, ADD , STACK, AVERAGE, TRAILS, ROLL, CHANNELS}; 
 enum RollMode{RM_DOWN, RM_UP, RM_LEFT, RM_RIGHT}; 
 
 struct Pixel

@@ -1,7 +1,8 @@
 #include "VideoWrapper.h"
 
 VideoWrapper::VideoWrapper(std::string m_fileName) :
-    activeIndex(0)
+    activeIndex(0),
+    loadedFrames(0)
 {
     vidCap.open(m_fileName);
 
@@ -33,9 +34,12 @@ VideoWrapper::VideoWrapper(std::string m_fileName) :
     {
         std::cout << "loading " << ii << "/" << maxFrames << std::endl;
         cv::Mat tempFrame;
-        vidCap.read(tempFrame);
+        vidCap >> tempFrame;
         if(tempFrame.rows > 0 && tempFrame.cols >0)
+        {
             frameVec.push_back(tempFrame);
+            loadedFrames++;
+        }
         else
             std::cout << "WARNING: bad frame read" << ii << std::endl;
     }
