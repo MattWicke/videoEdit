@@ -125,12 +125,9 @@ void trails(Mat _a, Mat _b, Mat& _dst, double scale)
          tempElem.r = 0;
          if((m < _a.rows && n < _a.cols)&&(m < _b.rows && n < _b.cols))
          {
-//            tempElem.b = _a.at<Pixel>(m,n).b + abs(_b.at<Pixel>(m,n).b - _a.at<Pixel>(m,n).b)/3;
-//            tempElem.g = _a.at<Pixel>(m,n).g + abs(_b.at<Pixel>(m,n).g - _a.at<Pixel>(m,n).g)/3;
-//            tempElem.r = _a.at<Pixel>(m,n).r + abs(_b.at<Pixel>(m,n).r - _a.at<Pixel>(m,n).r)/3;
-            tempElem.b = _a.at<Pixel>(m,n).b + abs(_b.at<Pixel>(m,n).b - _a.at<Pixel>(m,n).b)*_b.at<Pixel>(m,n).b/255;
-            tempElem.g = _a.at<Pixel>(m,n).g + abs(_b.at<Pixel>(m,n).g - _a.at<Pixel>(m,n).g)*_b.at<Pixel>(m,n).g/255;
-            tempElem.r = _a.at<Pixel>(m,n).r + abs(_b.at<Pixel>(m,n).r - _a.at<Pixel>(m,n).r)*_b.at<Pixel>(m,n).r/255;
+            tempElem.b = _a.at<Pixel>(m,n).b + abs(_b.at<Pixel>(m,n).b - _a.at<Pixel>(m,n).b)*_b.at<Pixel>(m,n).b/255 * scale;
+            tempElem.g = _a.at<Pixel>(m,n).g + abs(_b.at<Pixel>(m,n).g - _a.at<Pixel>(m,n).g)*_b.at<Pixel>(m,n).g/255 * scale;
+            tempElem.r = _a.at<Pixel>(m,n).r + abs(_b.at<Pixel>(m,n).r - _a.at<Pixel>(m,n).r)*_b.at<Pixel>(m,n).r/255 * scale;
          }
          _dst.at<Pixel>(m,n) = tempElem;
       }
@@ -154,7 +151,7 @@ void roll(Mat _a, Mat& _dst, int _frameRate, int _frameIndex, RollMode _rollMode
    {
       int barrier = _a.rows * (_frameIndex % _frameRate)/_frameRate;
       barrier = _a.rows - barrier;
-      line(_dst, Point(0, barrier), Point(_dst.cols, barrier), CV_RGB(0,0,255), 5);
+      //line(_dst, Point(0, barrier), Point(_dst.cols, barrier), CV_RGB(0,0,255), 5);
       cout << "barrier " << barrier << endl;
       _a(Rect(0, _a.rows - barrier, _a.cols, barrier)).copyTo(_dst(Rect(0, 0, _a.cols, barrier)));
       if(barrier < _a.rows -1)
@@ -171,9 +168,9 @@ void roll(Mat _a, Mat& _dst, int _frameRate, int _frameIndex, RollMode _rollMode
    {
       int barrier = _a.cols * (_frameIndex % _frameRate)/_frameRate;
       barrier = _a.cols - barrier;
-      _a(Rect(0, 0, _a.cols - barrier, _a.rows )).copyTo(_dst(Rect(barrier, 0, _a.cols - barrier, _a.rows)));
-      if(barrier >0)
-         _a(Rect(_a.cols - barrier, 0, barrier , _a.rows )).copyTo(_dst(Rect(0, 0, barrier, _a.rows )));
+      _a(Rect(_a.cols - barrier, 0,  barrier,  _a.rows )).copyTo(_dst(Rect(0, 0, barrier, _a.rows)));
+      if(barrier < _a.cols -1)
+         _a(Rect(0, 0, _a.cols - barrier , _a.rows )).copyTo(_dst(Rect(barrier, 0, _a.cols - barrier, _a.rows )));
    }
 }
 

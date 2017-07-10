@@ -22,12 +22,14 @@ public:
     std::string operator[](size_t ii);
     EffectMode eMode;
     PSortMode psMode;
+    RollMode rollMode;
     void printHelp();
 
 private:
     void assignParams();
     void assignMode(std::string inParam);
     void sortDirFromUser();
+    void rollDirFromUser();
 };
 
 CmdParser::CmdParser(int m_argc, char* m_argv[])
@@ -84,6 +86,7 @@ void CmdParser::assignMode(std::string inParam)
     if(inParam == "rol")
     {
         eMode = ROLL;
+        rollDirFromUser();
         std::cout << "Mode set to Roll" << std::endl;
     }
 
@@ -129,6 +132,40 @@ void CmdParser::sortDirFromUser()
 
         case 'v':
         psMode = VERT;
+        break;
+    }
+}
+
+void CmdParser::rollDirFromUser()
+{
+    char input = 0;
+
+    while(   (input  != 'u')
+           &&(input  != 'd')
+           &&(input  != 'l')
+           &&(input  != 'r'))
+    {
+        std::cout << "Enter a direction" << std::endl;
+        std::cout << " u up" << std::endl;
+        std::cout << " d down" << std::endl;
+        std::cout << " l left" << std::endl;
+        std::cout << " r right" << std::endl;
+        std::cin >> input;
+    }
+
+    switch(input)
+    {
+        case 'u':
+            rollMode = RM_UP;
+        break;
+        case 'd':
+            rollMode = RM_DOWN;
+        break;
+        case 'l':
+            rollMode = RM_LEFT;
+        break;
+        case 'r':
+            rollMode = RM_RIGHT;
         break;
     }
 }
@@ -437,7 +474,14 @@ void StateMachine::processVideo()
                 trails(store
                        , *activeVideo->getFramePtr(ii)
                        , dst
+                       , .3
                        );
+                dst.copyTo(store);
+                {
+                cv::Mat temp;
+                cv::bilateralFilter(dst, temp, 5, 20, 20);
+                dst = temp;
+                }
                 dst.copyTo(store);
             break;
 
@@ -445,9 +489,23 @@ void StateMachine::processVideo()
                 sum( *activeVideo->getFramePtr(ii)
                     , store 
                     , dst
+                    , .5
                     );
                 dst.copyTo(store);
-                store = store/2;
+                //{
+                //cv::Mat temp;
+                //cv::bilateralFilter(dst, temp, 5, 20, 20);
+                //dst = temp;
+                //}
+            break;
+
+            case ROLL:
+                roll( *activeVideo->getFramePtr(ii)
+                     , dst
+                     , activeVideo->frameRate * 4
+                     , ii
+                     , parser.rollMode
+                    );
             break;
 
             case KALE:

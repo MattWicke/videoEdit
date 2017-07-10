@@ -12,6 +12,7 @@ VideoWrapper::VideoWrapper(std::string m_fileName) :
     ex = static_cast<int>(vidCap.get(CV_CAP_PROP_FOURCC));
     fps = vidCap.get(CV_CAP_PROP_FPS);
     maxFrames = vidCap.get(CV_CAP_PROP_FRAME_COUNT);
+    frameRate = vidCap.get(CV_CAP_PROP_FPS);
     ext[0] = (char)(ex & 0XFF); 
     ext[1] = (char)((ex & 0XFF00) >> 8);
     ext[2] = (char)((ex & 0XFF0000) >> 16);
