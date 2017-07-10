@@ -44,5 +44,7 @@ void Erosion( int, void* );
 void sum(Mat _a, Mat _b, Mat& _dst, double scale=1.0);
 void trails(Mat _a, Mat _b, Mat& _dst, double scale=1.0);
 void roll(Mat _a, Mat& _dst, int _frameRate, int _frameIndex, RollMode _rollMode);
+void kaleido(Mat input, Mat& output);
+void kaleido2(Mat input, Mat& output);
 
 //void Dilation( int, void* )

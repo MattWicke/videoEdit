@@ -177,6 +177,100 @@ void roll(Mat _a, Mat& _dst, int _frameRate, int _frameIndex, RollMode _rollMode
    }
 }
 
+void kaleido(Mat tmp, Mat& output)
+{
+    cv::Mat input(tmp.rows, tmp.cols, tmp.type());
+    //cv::Mat input(input.rows, input.cols, input.type());
+    tmp.copyTo(input);
+    cv::Mat mask(input.rows, input.cols, CV_8UC1);
+    mask = mask * 0;
+    cv::Mat dst(input.rows, input.cols, input.type());
+    
+    output  = cv::Mat(input.rows, input.cols, input.type());
+
+    std::vector<cv::Point> roi_poly;
+    roi_poly.push_back(cv::Point(0,0));
+    roi_poly.push_back(cv::Point(input.cols/2 ,input.rows/2 ));
+    roi_poly.push_back(cv::Point(input.cols,0));
+
+    cv::Point2f src_poly[3];
+    src_poly[0] = cv::Point2f(0,0);
+    src_poly[1] = cv::Point2f(input.cols/2 ,input.rows/2 );
+    src_poly[2] = cv::Point2f(input.cols,0);
+
+    cv::Point2f dst_poly[3][3];
+    dst_poly[0][0] = cv::Point2f(0,input.rows);
+    dst_poly[0][1] = cv::Point2f(input.cols/2 ,input.rows/2 );
+    dst_poly[0][2] = cv::Point2f(0,0);
+
+    dst_poly[1][0] = cv::Point2f(input.cols ,input.rows);
+    dst_poly[1][1] = cv::Point2f(input.cols/2 ,input.rows/2 );
+    dst_poly[1][2] = cv::Point2f(0,input.rows);
+
+    dst_poly[2][0] = cv::Point2f(input.cols,0);
+    dst_poly[2][1] = cv::Point2f(input.cols/2 ,input.rows/2 );
+    dst_poly[2][2] = cv::Point2f(input.cols,input.rows);
+
+    
+    cv::fillConvexPoly(mask, &roi_poly[0], roi_poly.size(), 255, 8,0);
+
+    for(int ii = 0; ii < 4; ii++)
+    {
+        cout << "bang" << std::endl;
+        cv::Mat affine = cv::getAffineTransform(src_poly, dst_poly[2]);
+        cv::warpAffine(input, input, affine, input.size());
+        cv::warpAffine(mask, mask, affine, input.size());
+        input.copyTo(output, mask);
+    }
+}
+
+void kaleido2(Mat tmp, Mat& output)
+{
+    cv::Mat input(tmp.rows, tmp.cols, tmp.type());
+    //cv::Mat input(input.rows, input.cols, input.type());
+    tmp.copyTo(input);
+    cv::Mat mask(input.rows, input.cols, CV_8UC1);
+    mask = mask * 0;
+    cv::Mat dst(input.rows, input.cols, input.type());
+    
+    output  = cv::Mat(input.rows, input.cols, input.type());
+
+    std::vector<cv::Point> roi_poly;
+    roi_poly.push_back(cv::Point2f(input.cols ,input.rows));
+    roi_poly.push_back(cv::Point2f(input.cols/2 ,input.rows/2 ));
+    roi_poly.push_back(cv::Point2f(0,input.rows));
+
+    cv::Point2f src_poly[3];
+    src_poly[0] = cv::Point2f(input.cols ,input.rows);
+    src_poly[1] = cv::Point2f(input.cols/2 ,input.rows/2 );
+    src_poly[2] = cv::Point2f(0,input.rows);
+
+    cv::Point2f dst_poly[3][3];
+    dst_poly[0][0] = cv::Point2f(input.cols,0);
+    dst_poly[0][1] = cv::Point2f(input.cols/2 ,input.rows/2 );
+    dst_poly[0][2] = cv::Point2f(input.cols,input.rows);
+
+    dst_poly[1][0] = cv::Point2f(0,0);
+    dst_poly[1][1] = cv::Point2f(input.cols/2 ,input.rows/2 );
+    dst_poly[1][2] = cv::Point2f(input.cols,0);
+
+    dst_poly[2][0] = cv::Point2f(0,input.rows);
+    dst_poly[2][1] = cv::Point2f(input.cols/2 ,input.rows/2 );
+    dst_poly[2][2] = cv::Point2f(0,0);
+
+    
+    cv::fillConvexPoly(mask, &roi_poly[0], roi_poly.size(), 255, 8,0);
+
+    for(int ii = 0; ii < 4; ii++)
+    {
+        cout << "bang" << std::endl;
+        cv::Mat affine = cv::getAffineTransform(src_poly, dst_poly[2]);
+        cv::warpAffine(input, input, affine, input.size());
+        cv::warpAffine(mask, mask, affine, input.size());
+        input.copyTo(output, mask);
+    }
+}
+
 void Erosion( int, void* )
 {
    int erosion_type;

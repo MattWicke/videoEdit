@@ -12,7 +12,7 @@
 #include "pixelSort/pixelSort.h"
 
 //************************************cmdParser***************************************
-enum EffectMode {NO, RGB_DELAY, PIXEL_SORT, STACK, TRAILS, ROLL};
+enum EffectMode {NO, RGB_DELAY, PIXEL_SORT, STACK, TRAILS, ROLL, KALE};
 enum PSortMode {HORZ, VERT};
 class CmdParser
 {
@@ -85,6 +85,12 @@ void CmdParser::assignMode(std::string inParam)
     {
         eMode = ROLL;
         std::cout << "Mode set to Roll" << std::endl;
+    }
+
+    if(inParam == "kal")
+    {
+        eMode = KALE;
+        std::cout << "Mode set to kaleido" << std::endl;
     }
 
     if(inParam == "non")
@@ -271,6 +277,25 @@ void cropPhaseMouseFunction(int event, int mouseX, int mouseY, void* smPtr)
     }
 }
 
+cv::Rect centerCropRoi(cv::Rect croproi)
+{
+    cv::Rect out;
+    if(croproi.width > croproi.height)
+    {
+        out.width = croproi.height;
+        out.height = croproi.height;
+        out.x = (croproi.width - croproi.height) / 2;
+        out.y = 0;
+    }
+    else if(croproi.width > croproi.height)
+    {
+    }
+    else
+    {
+    }
+    return out;
+}
+
 //*****************************Callbacks*********************************
 void mouseCallback(int event, int mouseX, int mouseY, int, void* smPtr)
 {
@@ -329,6 +354,10 @@ void StateMachine::cropPhase()
 
     while(key != ' ')
     {
+        if(key == 'c')
+        {
+            activeVideo->croproi = centerCropRoi(activeVideo->croproi);
+        }
         cv::Mat displayFrame;
         activeVideo->getFrameActivePtr()->copyTo(displayFrame);
         cv::rectangle(displayFrame, activeVideo->croproi, CV_RGB(255, 255, 0), 10);
@@ -421,13 +450,19 @@ void StateMachine::processVideo()
                 store = store/2;
             break;
 
+            case KALE:
+                kaleido2( *activeVideo->getFramePtr(ii)
+                        , dst
+                        );
+            break;
+
             case NONE:
-                activeVideo->getFramePtr(ii)->copyTo(dst);
+            //    activeVideo->getFramePtr(ii)->copyTo(dst);
             break;
         }
         dst.copyTo(*activeVideo->getFramePtr(ii));
         cv::imshow("play", *activeVideo->getFramePtr(ii));
-        cv::waitKey(1);
+        cv::waitKey(10);
     }
     activeVideo->record("output.avi");
     std::cout << "video recorded" << std::endl;
