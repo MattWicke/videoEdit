@@ -82,3 +82,18 @@ void VideoWrapper::crop()
         frameVec[ii] = temp;
     }
 }
+
+void VideoWrapper::loopVideo(int loops)
+{
+    int initialSize = loadedFrames;
+    for(int jj = 0; jj < loops; jj++)
+    {
+        for(int ii = 0; ii < initialSize; ii++)
+        {
+            loadedFrames++;
+            cv::Mat temp(frameVec[ii].size(), frameVec[ii].type());
+            frameVec[ii].copyTo(temp);
+            frameVec.push_back(temp);
+        }
+    }
+}

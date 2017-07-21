@@ -23,6 +23,7 @@ public:
     int frameRate;
     void crop();
     double frameDelayUS;
+    void loopVideo(int loops);
 private:
     std::vector<cv::Mat> frameVec;
     int ex;

@@ -24,6 +24,7 @@ public:
     PSortMode psMode;
     RollMode rollMode;
     void printHelp();
+    int loops;
 
 private:
     void assignParams();
@@ -101,6 +102,9 @@ void CmdParser::assignMode(std::string inParam)
         eMode = NO;
         std::cout << "Mode set to none" << std::endl;
     }
+
+    std::cout << "Loop video? 0 for no loops" << std::endl;
+    std::cin >> loops;
 }
 
 void CmdParser::printHelp()
@@ -446,6 +450,9 @@ void StateMachine::processVideo()
     activeVideo->getFramePtr(0)->copyTo(store);
     activeVideo->getFramePtr(0)->copyTo(dst);
 
+    if(parser.loops > 0)
+        activeVideo->loopVideo(parser.loops);
+
     for(int ii = activeVideo->activeIndex; ii < activeVideo->loadedFrames; ii++)
     {
         
@@ -477,11 +484,11 @@ void StateMachine::processVideo()
                        , .3
                        );
                 dst.copyTo(store);
-                {
-                cv::Mat temp;
-                cv::bilateralFilter(dst, temp, 5, 20, 20);
-                dst = temp;
-                }
+               // {
+               // cv::Mat temp;
+               // cv::bilateralFilter(dst, temp, 5, 20, 20);
+               // dst = temp;
+               // }
                 dst.copyTo(store);
             break;
 
