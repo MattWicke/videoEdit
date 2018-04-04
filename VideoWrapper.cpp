@@ -49,10 +49,14 @@ VideoWrapper::VideoWrapper(std::string m_fileName) :
 
 void VideoWrapper::record(std::string m_fileName)
 {
-    cv::VideoWriter vidWrite(m_fileName, CV_FOURCC('M','P','4','2'), fps, sz);
+    cv::VideoWriter vidWrite(m_fileName
+            , CV_FOURCC('M','P','4','2')
+            , fps
+            , cv::Size(croproi.width, croproi.height)
+            );
 
     std::cout << "Beginning video write" << std::endl;
-    for(int ii = 0; ii < frameVec.size(); ii++)
+    for(int ii = 0; ii < frameVec.size() - 1; ii++)
     {
         vidWrite.write(frameVec[ii]);
         usleep(frameDelayUS);
