@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -22,6 +23,7 @@ public:
     int loadedFrames;
     int frameRate;
     void crop();
+    void crop(cv::Rect m_croproi);
     double frameDelayUS;
     void loopVideo(int loops);
 private:

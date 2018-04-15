@@ -87,6 +87,20 @@ void VideoWrapper::crop()
     }
 }
 
+void VideoWrapper::crop(cv::Rect m_croproi)
+{
+    croproi = m_croproi;
+    sz.width = m_croproi.width;
+    sz.height = m_croproi.height;
+    for(int ii = 0; ii < frameVec.size(); ii++)
+    {
+        std::cout << "crop " << ii << std::endl;
+        cv::Mat temp;
+        temp = cv::Mat(frameVec[ii](m_croproi));
+        frameVec[ii] = temp;
+    }
+}
+
 void VideoWrapper::loopVideo(int loops)
 {
     int initialSize = loadedFrames;

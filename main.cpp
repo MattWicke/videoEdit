@@ -11,13 +11,9 @@
 #include "filters.h"
 #include "pixelSort/pixelSort.h"
 #include "cmdParser.h"
+#include "controls.h"
 
 
-struct CropParams
-{
-    bool drag;
-    Side activeSide;
-};
 
 class StateMachine
 {
@@ -43,6 +39,24 @@ private:
     std::vector<VideoWrapper*> vidWrappers;
 };
 
+//*****************************Callbacks*********************************
+void pSTrackCallback(int inVal, void* smPtr)
+{
+    StateMachine* sm = (StateMachine*)smPtr;
+    sm->activeVideo->activeIndex = inVal;
+    sm->cparams.edges = cannyEdgeDetect(sm->cparams.source,
+                                        sm->cparams.lowThreshold);
+    cv::imshow("edges", sm->cparams.edges);
+}
+
+void pSCallback(int, void* smPtr)
+{
+    StateMachine* sm = (StateMachine*)smPtr;
+    sm->cparams.edges = cannyEdgeDetect(sm->cparams.source,
+                                        sm->cparams.lowThreshold);
+    cv::imshow("edges", sm->cparams.edges);
+}
+//***********************************************************************
 StateMachine::StateMachine(CmdParser &inparser):
     parser(inparser)
 {
@@ -63,150 +77,6 @@ void StateMachine::loadVideo(std::string fileName)
     activeVideo = newVideo;
 }
 
-//** used in the crop phase to figure out what side of the crop
-//** rectangle the user clicked
-Side getSideFromClick(VideoWrapper* vidPtr, int mouseX, int mouseY)
-{
-    Side side = NONE;
-    int lineWidth = 10;
-    int x1 = vidPtr->croproi.x;
-    int x2 = vidPtr->croproi.x + vidPtr->croproi.width;
-    int y1 = vidPtr->croproi.y;
-    int y2 = vidPtr->croproi.y + vidPtr->croproi.height;
-
-    if( abs(mouseX - x1) < lineWidth)
-        side = LEFT;
-    if( abs(mouseX - x2) < lineWidth)
-        side = RIGHT;
-    if( abs(mouseY - y1) < lineWidth)
-        side = UP;
-    if( abs(mouseY - y2) < lineWidth)
-        side = DOWN;
-
-    return side;
-}
-
-//** used in the crop phase to change the dimensions of the crop
-//** rectangle when the user is dragging it
-void changeCropRect(VideoWrapper* vidPtr 
-                    , CropParams* cropParams
-                    , int mouseX
-                    , int mouseY)
-{
-    int x1 = vidPtr->croproi.x;
-    int x2 = vidPtr->croproi.x + vidPtr->croproi.width;
-    int y1 = vidPtr->croproi.y;
-    int y2 = vidPtr->croproi.y + vidPtr->croproi.height;
-
-    switch(cropParams->activeSide)
-    {
-        case LEFT:
-        vidPtr->croproi.x = mouseX;
-        vidPtr->croproi.width = abs(x2 - mouseX);
-        break;
-
-        case RIGHT:
-        vidPtr->croproi.width = mouseX - x1;
-        break;
-
-        case UP:
-        vidPtr->croproi.y = mouseY;
-        vidPtr->croproi.height = abs(y2 - mouseY);
-        break;
-
-        case DOWN:
-        vidPtr->croproi.height = mouseY - y1;
-        break;
-    }
-}
-
-//** used int the crop phase. Should only be called from the mouseCallback
-void cropPhaseMouseFunction(int event, int mouseX, int mouseY, void* smPtr)
-{
-    StateMachine* sm = (StateMachine*)smPtr;
-    switch(event)
-    {
-        case EVENT_LBUTTONDOWN:
-            sm->cropParams.drag = true;
-            sm->cropParams.activeSide = getSideFromClick(sm->activeVideo, mouseX, mouseY);
-        break;
-
-        case EVENT_LBUTTONUP:
-            sm->cropParams.drag = false;
-            sm->cropParams.activeSide = NONE;
-        break;
-
-        case EVENT_MOUSEMOVE:
-        if(sm->cropParams.drag)
-        {
-            changeCropRect( sm->activeVideo 
-                           , &sm->cropParams
-                           , mouseX
-                           , mouseY
-                           );
-
-        }
-        break;
-    }
-}
-
-cv::Rect centerCropRoi(cv::Rect croproi)
-{
-    cv::Rect out;
-    if(croproi.width > croproi.height)
-    {
-        out.width = croproi.height;
-        out.height = croproi.height;
-        out.x = (croproi.width - croproi.height) / 2;
-        out.y = 0;
-    }
-    else if(croproi.width > croproi.height)
-    {
-    }
-    else
-    {
-    }
-    return out;
-}
-
-//*****************************Callbacks*********************************
-void mouseCallback(int event, int mouseX, int mouseY, int, void* smPtr)
-{
-    StateMachine* sm = (StateMachine*)smPtr;
-    //if(sm->state == CROP)
-    {
-        cropPhaseMouseFunction(event, mouseX, mouseY, smPtr);
-    }
-}
-
-void cropTrackCallback(int inVal, void* smPtr)
-{
-    StateMachine* sm = (StateMachine*)smPtr;
-    sm->activeVideo->activeIndex = inVal;
-    cv::Mat displayFrame;
-    sm->activeVideo->getFrameActivePtr()->copyTo(displayFrame);
-    cv::rectangle(displayFrame, sm->activeVideo->croproi, CV_RGB(255, 255, 0), 10);
-    cv::imshow("crop", displayFrame);
-}
-
-void pSTrackCallback(int inVal, void* smPtr)
-{
-    StateMachine* sm = (StateMachine*)smPtr;
-    sm->activeVideo->activeIndex = inVal;
-    sm->cparams.edges = cannyEdgeDetect(sm->cparams.source,
-                                        sm->cparams.lowThreshold);
-    cv::imshow("edges", sm->cparams.edges);
-}
-
-void pSCallback(int, void* smPtr)
-{
-    StateMachine* sm = (StateMachine*)smPtr;
-    sm->cparams.edges = cannyEdgeDetect(sm->cparams.source,
-                                        sm->cparams.lowThreshold);
-    cv::imshow("edges", sm->cparams.edges);
-}
-
-//***********************************************************************
 
 void StateMachine::cropPhase()
 {
@@ -218,27 +88,29 @@ void StateMachine::cropPhase()
                        , &(activeVideo->activeIndex)
                        , activeVideo->maxFrames -1
                        , cropTrackCallback
-                       , this
+                       , (void*)activeVideo
                        );
     char key = 0;
+    CropParams crop_params;
+    crop_params.croproi = activeVideo->croproi;
 
-    cv::setMouseCallback("crop", mouseCallback, this);
+    cv::setMouseCallback("crop", mouseCallback, (void*)&crop_params);
 
 
     while(key != ' ')
     {
         if(key == 'c')
         {
-            activeVideo->croproi = centerCropRoi(activeVideo->croproi);
+            crop_params.croproi = centerCropRoi(activeVideo->croproi);
         }
         cv::Mat displayFrame;
         activeVideo->getFrameActivePtr()->copyTo(displayFrame);
-        cv::rectangle(displayFrame, activeVideo->croproi, CV_RGB(255, 255, 0), 10);
+        cv::rectangle(displayFrame, crop_params.croproi, CV_RGB(255, 255, 0), 10);
         cv::imshow("crop", displayFrame);
         key = waitKey(10);
     }
     cv::destroyWindow("crop");
-    activeVideo->crop();
+    activeVideo->crop(crop_params.croproi);
 }
 
 void StateMachine::pSortTuningPhase()
