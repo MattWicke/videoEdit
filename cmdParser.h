@@ -3,7 +3,15 @@
 #include <vector>
 #include "types.h"
 
-enum EffectMode {NO, RGB_DELAY, PIXEL_SORT, STACK, TRAILS, ROLL, KALE};
+enum EffectMode {NO
+    , RGB_DELAY
+        , PIXEL_SORT
+        , STACK
+        , TRAILS
+        , ROLL
+        , KALE
+        , ERC
+};
 enum PSortMode {HORZ, VERT};
 class CmdParser
 {

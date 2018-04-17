@@ -63,6 +63,18 @@ void CmdParser::assignMode(std::string inParam)
         std::cout << "Mode set to kaleido" << std::endl;
     }
 
+    if(inParam == "kal")
+    {
+        eMode = KALE;
+        std::cout << "Mode set to kaleido" << std::endl;
+    }
+
+    if(inParam == "erc")
+    {
+        eMode = ERC;
+        std::cout << "Mode set to equirectangular" << std::endl;
+    }
+
     if(inParam == "non")
     {
         eMode = NO;
@@ -80,6 +92,9 @@ void CmdParser::printHelp()
     std::cout << " [srt] pixel sorting filter" << std::endl;
     std::cout << " [sta] stack frames filter" << std::endl;
     std::cout << " [tra] trails filter" << std::endl;
+    std::cout << " [rol] rolling filter" << std::endl;
+    std::cout << " [kal] kaleidoscope filter" << std::endl;
+    std::cout << " [erc] equirectangluar to cube faces" << std::endl;
 }
 
 void CmdParser::sortDirFromUser()
