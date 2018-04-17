@@ -23,6 +23,8 @@ VideoWrapper::VideoWrapper(std::string m_fileName) :
     croproi.width = sz.width;
     croproi.height = sz.height;
 
+    load();
+
     //** report properties
     std::cout << "New VideoWrapper created:" << std::endl;
     std::cout << "  fourcc " << ex << std::endl;
@@ -30,6 +32,19 @@ VideoWrapper::VideoWrapper(std::string m_fileName) :
     std::cout << "  fps " << fps << std::endl;
     std::cout << "  frame delay " << frameDelayUS << std::endl;
     
+}
+
+void VideoWrapper::load()
+{
+    if(frameVec.size() != 0)
+    {
+        frameVec.erase(
+                frameVec.begin()
+                ,frameVec.end()
+                );
+    }
+
+    vidCap.set(CV_CAP_PROP_POS_FRAMES, 1.0);
     //** load all video into memory
     for(int ii = 0; ii < maxFrames; ii++)
     {

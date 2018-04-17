@@ -26,6 +26,7 @@ public:
     void crop(cv::Rect m_croproi);
     double frameDelayUS;
     void loopVideo(int loops);
+    void load();
 private:
     std::vector<cv::Mat> frameVec;
     int ex;
