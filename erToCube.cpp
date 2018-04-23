@@ -113,7 +113,7 @@ cv::Mat genLeft(const cv::Mat& m_src)
                     );
 
             temp_pix = m_src.at<cv::Vec3b>(src_pnt.y ,src_pnt.x);
-            dst.at<cv::Vec3b>(ii,dst.cols - jj) = temp_pix;
+            dst.at<cv::Vec3b>(ii,dst.cols - jj -1) = temp_pix;
         }
     }
     return dst;
@@ -128,33 +128,6 @@ cv::Mat genTop(const cv::Mat& m_src)
   {
       for(int jj = 0; jj < dst.cols; jj++)
       {
- //           cv::Vec3b temp_pix;
- //           double x, z;
- //           const double y = 1.0;
- //           Point2D src_pnt;
- //           
- //           x = normalize(
- //                   jj
- //                   , dst.rows
- //                   );
-
- //           z = normalize(
- //                   ii
- //                   , dst.cols
- //                   );
-
- //           src_pnt = getSphFromCart(
- //                   x
- //                   ,y
- //                   ,z
- //                   ,m_src.cols
- //                   ,m_src.rows
- //                   );
-
- //           temp_pix = m_src.at<cv::Vec3b>(src_pnt.y ,src_pnt.x);
- //           dst.at<cv::Vec3b>(ii,dst.cols - jj) = temp_pix;
- //           
-
             cv::Vec3b temp_pix;
             
             double y, x;

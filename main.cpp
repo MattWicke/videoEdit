@@ -259,7 +259,7 @@ void StateMachine::processVideo(std::string fileName)
         //*activeVideo->getFramePtr(ii) = dst;
         cv::imshow("play", *activeVideo->getFramePtr(ii));
         retKey = cv::waitKey(10);
-        if(retKey = ' ')
+        if(retKey = 'g')
         {
             std::string fileName;
             fileName = "snap" + picCount;
