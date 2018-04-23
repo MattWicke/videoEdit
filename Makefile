@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -g
 LDFLAGS = `pkg-config --libs opencv`
 
-OBJS = main.cpp VideoWrapper.cpp filters.cpp pixelSort/pixelSort.cpp cmdParser.cpp controls.cpp
+OBJS = main.cpp VideoWrapper.cpp filters.cpp pixelSort/pixelSort.cpp cmdParser.cpp controls.cpp erToCube.cpp
 
 OBJ_NAME = ve
 

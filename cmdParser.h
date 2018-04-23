@@ -3,6 +3,14 @@
 #include <vector>
 #include "types.h"
 
+enum CubeFace {
+         CF_FRONT
+        , CF_LEFT
+        , CF_RIGHT
+        , CF_TOP
+        , CF_NONE
+};
+
 enum EffectMode {NO
     , RGB_DELAY
         , PIXEL_SORT
@@ -22,6 +30,7 @@ public:
     EffectMode eMode;
     PSortMode psMode;
     RollMode rollMode;
+    CubeFace cf;
     void printHelp();
     int loops;
 

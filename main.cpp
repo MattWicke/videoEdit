@@ -12,6 +12,7 @@
 #include "pixelSort/pixelSort.h"
 #include "cmdParser.h"
 #include "controls.h"
+#include "erToCube.h"
 
 
 
@@ -32,7 +33,7 @@ public:
     void cropPhase();
     void loadVideo(std::string fileName);
     bool setActiveVideo(int index);
-    void processVideo();
+    void processVideo(std::string fileName);
     void pSortTuningPhase();
 
 private:
@@ -146,7 +147,7 @@ void StateMachine::pSortTuningPhase()
     cv::destroyWindow("edges");
 }
 
-void StateMachine::processVideo()
+void StateMachine::processVideo(std::string fileName)
 {
     cv::namedWindow("play", CV_WINDOW_NORMAL);
     cv::Mat dst;
@@ -227,11 +228,35 @@ void StateMachine::processVideo()
                         );
             break;
 
+            case ERC:
+                switch(parser.cf)
+                {
+                    case CF_FRONT:
+                        dst = genFront(*activeVideo->getFramePtr(ii));
+                    break;
+                    case CF_LEFT:
+                        dst = genLeft(*activeVideo->getFramePtr(ii));
+                    break;
+                    case CF_RIGHT:
+                        dst = genRight(*activeVideo->getFramePtr(ii));
+                    break;
+                    case CF_TOP:
+                        dst = genTop(*activeVideo->getFramePtr(ii));
+                      //  cv::namedWindow("debug", CV_WINDOW_NORMAL);
+                      //  cv::imshow("debud", dst);
+                      //  cv::waitKey();
+                    break;
+                }
+
+            break;
+
             case NONE:
             //    activeVideo->getFramePtr(ii)->copyTo(dst);
             break;
         }
+        activeVideo->getFramePtr(ii)->release();
         dst.copyTo(*activeVideo->getFramePtr(ii));
+        //*activeVideo->getFramePtr(ii) = dst;
         cv::imshow("play", *activeVideo->getFramePtr(ii));
         retKey = cv::waitKey(10);
         if(retKey = ' ')
@@ -243,7 +268,7 @@ void StateMachine::processVideo()
             imwrite(fileName, dst);
         }
     }
-    activeVideo->record("output.avi");
+    activeVideo->record(fileName);
     std::cout << "video recorded" << std::endl;
 }
 
@@ -259,8 +284,42 @@ int main(int argc, char* argv[])
     }
     StateMachine sm(parser);
     sm.loadVideo(parser[1]);
-    sm.cropPhase();
     if(sm.parser.eMode == PIXEL_SORT)
         sm.pSortTuningPhase();
-    sm.processVideo();
+    if(sm.parser.eMode == ERC)
+    {
+//        sm.parser.cf = CF_TOP;
+//        sm.processVideo("top.avi");
+        for(int ii = 0; ii < 4; ii++)
+        {
+            std::string fileName("out");
+            switch(ii)
+            {
+                case 0:
+                sm.parser.cf = CF_FRONT;
+                fileName +="Front";
+                break;
+                case 1:
+                sm.parser.cf = CF_LEFT;
+                fileName +="Left";
+                break;
+                case 2:
+                sm.parser.cf = CF_RIGHT;
+                fileName +="Right";
+                break;
+                case 3:
+                sm.parser.cf = CF_TOP;
+                fileName +="Top";
+                break;
+            }
+            fileName += ".avi";
+            sm.activeVideo->load();
+            sm.processVideo(fileName);
+        }
+    }
+    else
+    {
+        sm.cropPhase();
+        sm.processVideo("outfile.avi");
+    }
 }

@@ -36,15 +36,14 @@ VideoWrapper::VideoWrapper(std::string m_fileName) :
 
 void VideoWrapper::load()
 {
-    if(frameVec.size() != 0)
+    for(int ii = 0; ii < frameVec.size(); ii++)
     {
-        frameVec.erase(
-                frameVec.begin()
-                ,frameVec.end()
-                );
+        frameVec[ii].release();
     }
+    frameVec.clear();
+    loadedFrames = 0;
 
-    vidCap.set(CV_CAP_PROP_POS_FRAMES, 1.0);
+    vidCap.set(CV_CAP_PROP_POS_FRAMES, 0);
     //** load all video into memory
     for(int ii = 0; ii < maxFrames; ii++)
     {
@@ -55,6 +54,7 @@ void VideoWrapper::load()
         {
             frameVec.push_back(tempFrame);
             loadedFrames++;
+            tempFrame.release();
         }
         else
             std::cout << "WARNING: bad frame read" << ii << std::endl;
@@ -67,7 +67,7 @@ void VideoWrapper::record(std::string m_fileName)
     cv::VideoWriter vidWrite(m_fileName
             , CV_FOURCC('M','P','4','2')
             , fps
-            , cv::Size(croproi.width, croproi.height)
+            , cv::Size(frameVec[0].cols, frameVec[0].rows)
             );
 
     std::cout << "Beginning video write" << std::endl;
@@ -76,6 +76,7 @@ void VideoWrapper::record(std::string m_fileName)
         vidWrite.write(frameVec[ii]);
         usleep(frameDelayUS);
     }
+    vidWrite.release();
     std::cout << "Video write complete" << std::endl;
 }
 
