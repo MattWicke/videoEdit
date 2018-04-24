@@ -248,6 +248,11 @@ void StateMachine::processVideo(std::string fileName)
                     break;
                 }
 
+                {
+                cv::Mat temp;
+                cv::bilateralFilter(dst, temp, 5, 20, 20);
+                dst = temp;
+                }
             break;
 
             case NONE:
@@ -258,7 +263,7 @@ void StateMachine::processVideo(std::string fileName)
         dst.copyTo(*activeVideo->getFramePtr(ii));
         //*activeVideo->getFramePtr(ii) = dst;
         cv::imshow("play", *activeVideo->getFramePtr(ii));
-        retKey = cv::waitKey(10);
+        retKey = cv::waitKey(5);
         if(retKey = 'g')
         {
             std::string fileName;
