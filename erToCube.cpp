@@ -1,7 +1,7 @@
 #include "erToCube.h"
 #include <iostream>
 
-const double SCALE = 2.0;
+const double SCALE = 1.0;
 double normalize(
         double m_in
         , double m_max
@@ -92,7 +92,7 @@ Point2D genLeftIndices(
 
     z = normalize(
             m_ii
-            , m_width
+            , m_height
             );
 
     src_pnt = getSphFromCart(
@@ -124,7 +124,7 @@ Point2D genTopIndices(
 
     x = normalize(
             m_ii
-            , m_width
+            , m_height
             );
 
     src_pnt = getSphFromCart(
@@ -156,7 +156,7 @@ Point2D genRightIndices(
 
     z = normalize(
             m_ii
-            , m_width
+            , m_height
             );
 
     src_pnt = getSphFromCart(
