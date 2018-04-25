@@ -23,8 +23,6 @@ VideoWrapper::VideoWrapper(std::string m_fileName) :
     croproi.width = sz.width;
     croproi.height = sz.height;
 
-    load();
-
     //** report properties
     std::cout << "New VideoWrapper created:" << std::endl;
     std::cout << "  fourcc " << ex << std::endl;

@@ -16,3 +16,10 @@ struct Pixel
     unsigned char g;
     unsigned char r;
 };
+enum CubeFace {
+         CF_FRONT
+        , CF_LEFT
+        , CF_RIGHT
+        , CF_TOP
+        , CF_NONE
+};

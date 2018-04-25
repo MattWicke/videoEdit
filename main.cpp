@@ -31,7 +31,7 @@ public:
     StateMachine(CmdParser &inparser);
     ~StateMachine();
     void cropPhase();
-    void loadVideo(std::string fileName);
+    void openVideo(std::string fileName);
     bool setActiveVideo(int index);
     void processVideo(std::string fileName);
     void pSortTuningPhase();
@@ -71,7 +71,7 @@ StateMachine::~StateMachine()
 }
 
 
-void StateMachine::loadVideo(std::string fileName)
+void StateMachine::openVideo(std::string fileName)
 {
     VideoWrapper* newVideo = new VideoWrapper(fileName);
     vidWrappers.push_back(newVideo);
@@ -229,41 +229,26 @@ void StateMachine::processVideo(std::string fileName)
             break;
 
             case ERC:
-                switch(parser.cf)
-                {
-                    case CF_FRONT:
-                        dst = genFront(*activeVideo->getFramePtr(ii));
-                    break;
-                    case CF_LEFT:
-                        dst = genLeft(*activeVideo->getFramePtr(ii));
-                    break;
-                    case CF_RIGHT:
-                        dst = genRight(*activeVideo->getFramePtr(ii));
-                    break;
-                    case CF_TOP:
-                        dst = genTop(*activeVideo->getFramePtr(ii));
-                      //  cv::namedWindow("debug", CV_WINDOW_NORMAL);
-                      //  cv::imshow("debud", dst);
-                      //  cv::waitKey();
-                    break;
-                }
+                dst = genCubeFace(
+                        *activeVideo->getFramePtr(ii)
+                        ,parser.cf
+                        );
 
-                {
-                cv::Mat temp;
-                cv::bilateralFilter(dst, temp, 5, 20, 20);
-                dst = temp;
-                }
+               // cv::Mat temp;
+               // cv::bilateralFilter(dst, temp, 5, 20, 20);
+               // dst = temp;
             break;
 
             case NONE:
-            //    activeVideo->getFramePtr(ii)->copyTo(dst);
+                //activeVideo->getFramePtr(ii)->copyTo(dst);
             break;
         }
         activeVideo->getFramePtr(ii)->release();
         dst.copyTo(*activeVideo->getFramePtr(ii));
+        dst.release();
         //*activeVideo->getFramePtr(ii) = dst;
         cv::imshow("play", *activeVideo->getFramePtr(ii));
-        retKey = cv::waitKey(5);
+        retKey = cv::waitKey(1);
         if(retKey = 'g')
         {
             std::string fileName;
@@ -288,7 +273,7 @@ int main(int argc, char* argv[])
         return 0;
     }
     StateMachine sm(parser);
-    sm.loadVideo(parser[1]);
+    sm.openVideo(parser[1]);
     if(sm.parser.eMode == PIXEL_SORT)
         sm.pSortTuningPhase();
     if(sm.parser.eMode == ERC)
@@ -324,6 +309,7 @@ int main(int argc, char* argv[])
     }
     else
     {
+        sm.activeVideo->load();
         sm.cropPhase();
         sm.processVideo("outfile.avi");
     }

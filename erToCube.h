@@ -6,17 +6,18 @@
 #include <math.h>
 #include "types.h"
 
+
 struct Point2D
 {
     double x, y;
 };
 
-double normalize(
+inline double normalize(
         double m_in
         , double m_max
         );
 
-Point2D getSphFromCart(
+inline Point2D getSphFromCart(
         double m_x
         , double m_y
         , double m_z
@@ -24,7 +25,35 @@ Point2D getSphFromCart(
         , double src_height
         );
 
-cv::Mat genFront(const cv::Mat& m_src);
-cv::Mat genLeft(const cv::Mat& m_src);
-cv::Mat genTop(const cv::Mat& m_src);
-cv::Mat genRight(const cv::Mat& m_src);
+inline Point2D genFrontIndices(
+        int m_ii
+        ,int m_jj
+        ,double m_width
+        ,double m_height
+        );
+
+inline Point2D genLeftIndices(
+        int m_ii
+        ,int m_jj
+        ,double m_width
+        ,double m_height
+        );
+
+inline Point2D genTopIndices(
+        int m_ii
+        ,int m_jj
+        ,double m_width
+        ,double m_height
+        );
+
+inline Point2D genRightIndices(
+        int m_ii
+        ,int m_jj
+        ,double m_width
+        ,double m_height
+        );
+
+cv::Mat genCubeFace(
+        const cv::Mat& m_src
+        , CubeFace m_face
+        );
