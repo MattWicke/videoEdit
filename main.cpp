@@ -188,7 +188,7 @@ void StateMachine::processVideo(std::string fileName)
                 trails(store
                        , *activeVideo->getFramePtr(ii)
                        , dst
-                       , .1
+                       , .93
                        );
               //  dst.copyTo(store);
               //  {
@@ -245,7 +245,7 @@ void StateMachine::processVideo(std::string fileName)
         }
         activeVideo->getFramePtr(ii)->release();
         dst.copyTo(*activeVideo->getFramePtr(ii));
-        dst.release();
+       // dst.release();
         //*activeVideo->getFramePtr(ii) = dst;
         cv::imshow("play", *activeVideo->getFramePtr(ii));
         retKey = cv::waitKey(1);
