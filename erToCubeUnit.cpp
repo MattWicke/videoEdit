@@ -27,10 +27,12 @@ int main(int argc, char* argv[])
                 src
                 , CF_TOP
                 );
+    cv::namedWindow("source", CV_WINDOW_NORMAL);
     cv::namedWindow("front", CV_WINDOW_NORMAL);
     cv::namedWindow("left", CV_WINDOW_NORMAL);
     cv::namedWindow("right", CV_WINDOW_NORMAL);
     cv::namedWindow("top", CV_WINDOW_NORMAL);
+    cv::imshow("source", src);
     cv::imshow("front", front);
     cv::imshow("left", left);
     cv::imshow("right", right);

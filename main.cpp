@@ -303,13 +303,17 @@ int main(int argc, char* argv[])
                 break;
             }
             fileName += ".avi";
-            sm.activeVideo->load();
+            sm.activeVideo->load(
+                sm.parser.timeLapse
+                    );
             sm.processVideo(fileName);
         }
     }
     else
     {
-        sm.activeVideo->load();
+        sm.activeVideo->load(
+                sm.parser.timeLapse
+                );
         sm.cropPhase();
         sm.processVideo("outfile.avi");
     }

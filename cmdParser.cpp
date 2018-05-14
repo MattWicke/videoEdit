@@ -1,5 +1,6 @@
 #include "cmdParser.h"
-CmdParser::CmdParser(int m_argc, char* m_argv[])
+CmdParser::CmdParser(int m_argc, char* m_argv[]):
+    timeLapse(1)
 {
     for(int ii = 0; ii < m_argc; ii++)
     {
@@ -18,6 +19,11 @@ void CmdParser::assignParams()
         {
             ii++;
             assignMode(args[ii]);
+        }
+        if(args[ii] == "-t")
+        {
+            ii++;
+            timeLapse = atoi(args[ii].c_str());
         }
         ii++;
     }

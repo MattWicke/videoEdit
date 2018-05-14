@@ -34,6 +34,11 @@ VideoWrapper::VideoWrapper(std::string m_fileName) :
 
 void VideoWrapper::load()
 {
+    load(1);
+}
+
+void VideoWrapper::load(int m_timeLapse)
+{
     for(int ii = 0; ii < frameVec.size(); ii++)
     {
         frameVec[ii].release();
@@ -48,14 +53,15 @@ void VideoWrapper::load()
         std::cout << "loading " << ii << "/" << maxFrames << std::endl;
         cv::Mat tempFrame;
         vidCap >> tempFrame;
-        if(tempFrame.rows > 0 && tempFrame.cols >0)
+        if(tempFrame.rows > 0 && tempFrame.cols >0 
+                && ii % m_timeLapse == 0)
         {
             frameVec.push_back(tempFrame);
             loadedFrames++;
             tempFrame.release();
         }
-        else
-            std::cout << "WARNING: bad frame read" << ii << std::endl;
+        //else
+            //std::cout << "WARNING: bad frame read" << ii << std::endl;
     }
     std::cout << "  Done Loading Video" << std::endl;
 }

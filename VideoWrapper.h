@@ -27,6 +27,7 @@ public:
     double frameDelayUS;
     void loopVideo(int loops);
     void load();
+    void load(int m_timeLapse);
 private:
     std::vector<cv::Mat> frameVec;
     int ex;

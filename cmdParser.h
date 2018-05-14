@@ -26,6 +26,7 @@ public:
     CubeFace cf;
     void printHelp();
     int loops;
+    int timeLapse;
 
 private:
     void assignParams();
