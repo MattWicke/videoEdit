@@ -61,7 +61,7 @@ void pSCallback(int, void* smPtr)
 StateMachine::StateMachine(CmdParser &inparser):
     parser(inparser)
 {
-    channelSplitter = new ChannelSplitter(0,5,10);
+    channelSplitter = new ChannelSplitter(0,3,6);
 }
 
 StateMachine::~StateMachine()

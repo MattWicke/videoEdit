@@ -1,7 +1,7 @@
 #include "erToCube.h"
 #include <iostream>
 
-const double SCALE = 1.0;
+const double SCALE = 1.5;
 double normalize(
         double m_in
         , double m_max

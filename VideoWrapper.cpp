@@ -50,18 +50,21 @@ void VideoWrapper::load(int m_timeLapse)
     //** load all video into memory
     for(int ii = 0; ii < maxFrames; ii++)
     {
-        std::cout << "loading " << ii << "/" << maxFrames << std::endl;
         cv::Mat tempFrame;
         vidCap >> tempFrame;
-        if(tempFrame.rows > 0 && tempFrame.cols >0 
-                && ii % m_timeLapse == 0)
+        if(ii % m_timeLapse == 0)
         {
-            frameVec.push_back(tempFrame);
-            loadedFrames++;
-            tempFrame.release();
+            if(tempFrame.rows > 0 && tempFrame.cols >0 )
+            {
+                std::cout << "loading " << ii << "/" << maxFrames << std::endl;
+                frameVec.push_back(tempFrame);
+                loadedFrames++;
+                tempFrame.release();
+            }
+            else
+                std::cout << "WARNING: bad frame read" << ii << std::endl;
         }
-        //else
-            //std::cout << "WARNING: bad frame read" << ii << std::endl;
+        tempFrame.release();
     }
     std::cout << "  Done Loading Video" << std::endl;
 }

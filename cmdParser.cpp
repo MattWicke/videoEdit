@@ -24,6 +24,7 @@ void CmdParser::assignParams()
         {
             ii++;
             timeLapse = atoi(args[ii].c_str());
+            std::cout << "Time lapse set to " << timeLapse << "frames" << std::endl;
         }
         ii++;
     }
